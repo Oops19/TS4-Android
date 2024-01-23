@@ -12,7 +12,8 @@ There is no `undo` command so one needs to remove buffs and traits manually to '
 Only tested with adult human sims while it should also work for younger and/or animal sims.
 
 ### Known Issues
-Some interactions never complete.
+* Some interactions never complete.
+* Some buffs / traits are not properly saved / loaded.
 
 ### Missing (not yet planned) features:
 * Disable all pie menu interactions for the sim.
@@ -39,7 +40,7 @@ Some interactions never complete.
 # Addendum
 
 ## Game compatibility
-This mod has been tested with `The Sims 4` 1.99.305 (2023-08), S4CL 2.8 (2023-08), TS4Lib 0.1.0 (2023-06).
+This mod has been tested with `The Sims 4` 1.100.147 (2023-09), S4CL 2.8 (2023-08), TS4Lib 0.1.7 (2023-09).
 It is expected to be compatible with many upcoming releases of TS4, S4CL and TS4Lib.
 
 ## Dependencies
