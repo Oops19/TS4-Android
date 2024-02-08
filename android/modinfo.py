@@ -33,7 +33,8 @@ class ModInfo(CommonModInfo):
 
 '''
 v0.0.2
-    Updated README for new TS4 version, updated README.
+    Updated README
+    Updated README for new TS4 version
 v0.0.1
     Initial version
 '''

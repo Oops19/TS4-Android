@@ -10,6 +10,7 @@ from android.modinfo import ModInfo
 from sims.sim_info import SimInfo
 from sims4communitylib.utils.sims.common_buff_utils import CommonBuffUtils
 from sims4communitylib.utils.sims.common_trait_utils import CommonTraitUtils
+from ts4lib.utils.singleton import Singleton
 from ts4lib.utils.tuning_helper import TuningHelper
 
 from sims4communitylib.services.commands.common_console_command import CommonConsoleCommand, CommonConsoleCommandArgument
@@ -22,7 +23,7 @@ log.enable()
 log.debug(f"Starting {ModInfo.get_identity().name}")
 
 
-class MakeAndroid:
+class MakeAndroid(object, metaclass=Singleton):
     def __init__(self):
         th = TuningHelper()
         self.android_trait_ids = th.get_tuning_ids(None, [
@@ -37,14 +38,10 @@ class MakeAndroid:
             "buff_Suntan_LockDecay",
             "Buff_Trait_SpeedCleaner",
             "Buff_Trait_SpeedReader",
+            'buff_Suppress_*',
+            "buff_SuppressFrontPagePieMenu", "buff_Suppress_All_Interaction", "buff_Suppress_AllAutonomy",
+            # "buff_Sim_IsDoll",
         ])
-        _suppress_android_buff_ids = th.get_tuning_ids(None, ['buff_Suppress_*', ])
-        rm_suppress_android_buff_ids = th.get_tuning_ids(None, [
-            'buff_Suppress_Visible_Motives_Exclude_Energy',
-            # 'buff_SuppressFrontPagePieMenu',
-        ])
-        buff_suppress_ids = _suppress_android_buff_ids.difference(rm_suppress_android_buff_ids)
-        self.android_buff_ids.update(_suppress_android_buff_ids)
 
         self.android_undo_control_ids = th.get_tuning_ids(None, [
             "buff_SuppressFrontPagePieMenu", "buff_Suppress_All_Interaction", "buff_Suppress_AllAutonomy",
@@ -58,14 +55,21 @@ class MakeAndroid:
     @CommonConsoleCommand(ModInfo.get_identity(), 'o19.android.add', 'Convert active Sim to Android')
     def cheat_o19_android_add(output: CommonConsoleCommandOutput):
         ma = MakeAndroid()
+        #
         sim_info: SimInfo = CommonSimUtils.get_active_sim_info()
+        android_b = {}
+        android_t = {}
+        for i in ma.android_buff_ids:
+            android_b.update({i: CommonBuffUtils().has_buff(sim_info, i)})
+        for i in ma.android_trait_ids:
+            android_t.update({i: CommonTraitUtils().has_trait(sim_info, i)})
+
+        if sim_info not in ma.androids.keys():
+            ma.androids.update({sim_info: {'buffs': android_b, 'treaits': android_t}})
+        log.debug(ma.androids.get(sim_info))
+
         CommonBuffUtils().add_buffs(sim_info, ma.android_buff_ids)
         CommonTraitUtils().add_traits(sim_info, ma.android_trait_ids)
-
-        # set spawn-location
-        ma.androids.update({sim_info: None})
-        output(f"{ ma.android_buff_ids}")
-        output(f"{ma.android_trait_ids}")
         output("ok")
 
     @staticmethod
@@ -74,7 +78,20 @@ class MakeAndroid:
         ma = MakeAndroid()
         sim_info: SimInfo = CommonSimUtils.get_active_sim_info()
         if sim_info in ma.androids.keys():
-            CommonBuffUtils.remove_buffs(sim_info, ma.andoid_control_buff_ids)
+            data = ma.androids.get(sim_info)
+            for k, v in data.items():
+                if k == 'buffs':
+                    for i, b in v.items():
+                        if b is True:
+                            CommonBuffUtils().add_buff(sim_info, i)
+                        else:
+                            CommonBuffUtils().remove_buff(sim_info, i)
+                if k == 'traits':
+                    for i, b in v.items():
+                        if b is True:
+                            CommonTraitUtils().add_trait(sim_info, i)
+                        else:
+                            CommonTraitUtils().remove_trait(sim_info, i)
             output("ok")
 
 '''
